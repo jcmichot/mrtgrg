@@ -23,14 +23,14 @@ several absolute path and filename for your mrtg configuration file.
 
 Syntax example:
 
- rrdmrtg.php
- rrdmrtg.php?cfg=mrtg.cfg&target=port24
- rrdmrtg.php?cfg=mrtg.cfg&target=port24&png=weekly
+ mrtgrg.php
+ mrtgrg.php?cfg=mrtg.cfg&target=port24
+ mrtgrg.php?cfg=mrtg.cfg&target=port24&png=weekly
 
  To manualy force width &| height 
  (this can also be configured inside mrtg config file):
  
- rrdmrtg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1400&height=300
+ mrtgrg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1400&height=300
 
 A new option is available in your MRTG config file:
 
