@@ -28,14 +28,17 @@ several absolute path and filename for your mrtg configuration file.
 
 Syntax example:
 
- mrtgrg.php
- mrtgrg.php?cfg=mrtg.cfg&target=port24
- mrtgrg.php?cfg=mrtg.cfg&target=port24&png=weekly
+ [url]/mrtgrg.php
+ [url]/mrtgrg.php?cfg=mrtg.cfg&target=port24
+ [url]/mrtgrg.php?cfg=mrtg.cfg&target=port24&png=weekly
 
  To manualy force width &| height 
  (this can also be configured inside mrtg config file):
  
- mrtgrg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1400&height=300
+ [url]/mrtgrg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1280&height=450
+
+ To manualy force 2waygraph:
+ [url]/mrtgrg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1280&height=450&force2way=1
 
 A new option is available in your MRTG config file:
 
@@ -51,6 +54,7 @@ A new option is available in your MRTG config file:
 
     Rrd*HtmlHead[ TARGET ]: /usr/local/www/data/htmlfiletoinclude.html
 
+
 All test has been done with:
  FreeBSD and pkg mod_php74-7.4.27 php74-gd-7.4.23 php74-pecl-rrd-2.0.1_1 
 
@@ -62,16 +66,16 @@ Note: i'm also using influxdb, telegraf, grafana,
 $mrtgconfigfiles = array (
 
 	'/usr/local/etc/mrtg/mrtg.cfg',
+/*
 	'/usr/local/etc/mrtg/homebridge.cfg',
 	'/usr/local/etc/mrtg/livebox-pm.cfg',
 	'/usr/local/etc/mrtg/perso.cfg',
 	'/usr/local/etc/mrtg/rgw.cfg',
+*/
 
 	);
 
 $display_main_dw = 1;
-
-
 
 function read_mrtg_config_file( $configfile )
 {
@@ -269,8 +273,11 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 		$title = $config['title'] .' - '. $format. "\n";
 
 	$ylegend = "Bits per Second";
-	if ( isset( $config['ylegend'] ) )
+    $net95 = 1; // display 95percentil
+	if ( isset( $config['ylegend'] ) ) {
+        $net95 = 0;
         $ylegend = "\n". str_replace(":", " ", $config['ylegend'] );
+        }
 
 	$legendi = 'in';
 	if ( isset( $config['legendi'] ) )
@@ -300,6 +307,9 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 		if ( $h >= 50 && $h <= 2048 ) $height = $h;
 		}
 
+    if( $width < 580 ) // we need space to display 95percentil
+        $net95=0;
+
 	$options = array();
 	if ( isset( $config['options'] ) ) $options = explode( ",", $config['options'] );
 
@@ -307,6 +317,10 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 	if ( isset( $config['rrd*graph'] ) ) {
 		$options = array_merge( $options, explode( ",", $config['rrd*graph'] ) );
 		}
+
+    $need2way = 0;
+	if ( in_array( '2waygraph', $options ) || (1 == getvar('force2way')) )
+        $need2way = 1;
 
 	$now = strftime( "%Y-%m-%d %R", time() );
 	$period = 0;
@@ -388,10 +402,7 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 	                "DEF:davg0=". $rrdfile .":ds0:AVERAGE".$step,
 					"DEF:dmin0=". $rrdfile .":ds0:MIN".$step,
 					"DEF:dmax0=". $rrdfile .":ds0:MAX".$step,
-	                "VDEF:ds0max=davg0,MAXIMUM",
-	                "VDEF:ds0avg=davg0,AVERAGE",
-	                "VDEF:ds0min=davg0,MINIMUM",
-	                "VDEF:ds0last=davg0,LAST",
+					"DEF:dlast0=". $rrdfile .":ds0:LAST".$step,
 					);
 				$d=0;
 				}
@@ -401,10 +412,7 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 	                "DEF:davg1=". $rrdfile .":ds1:AVERAGE".$step,
 					"DEF:dmin1=". $rrdfile .":ds1:MIN".$step,
 					"DEF:dmax1=". $rrdfile .":ds1:MAX".$step,
-	                "VDEF:ds1max=davg1,MAXIMUM",
-	                "VDEF:ds1avg=davg1,AVERAGE",
-	                "VDEF:ds1min=davg1,MINIMUM",
-	                "VDEF:ds1last=davg1,LAST"
+					"DEF:dlast1=". $rrdfile .":ds1:LAST".$step,
 					);
 				$d=1;
 				}
@@ -416,24 +424,18 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 					"DEF:dmin1=". $rrdfile .":ds1:MIN".$step,
 					"DEF:dmax0=". $rrdfile .":ds0:MAX".$step,
 					"DEF:dmax1=". $rrdfile .":ds1:MAX".$step,
-					"VDEF:ds0max=davg0,MAXIMUM",
-					"VDEF:ds0avg=davg0,AVERAGE",
-					"VDEF:ds0min=davg0,MINIMUM",
-					"VDEF:ds0last=davg0,LAST",
-					"VDEF:ds1max=davg1,MAXIMUM",
-					"VDEF:ds1avg=davg1,AVERAGE",
-					"VDEF:ds1min=davg1,MINIMUM",
-					"VDEF:ds1last=davg1,LAST",
+					"DEF:dlast0=". $rrdfile .":ds0:LAST".$step,
+					"DEF:dlast1=". $rrdfile .":ds1:LAST".$step,
 					);
 				$d=2;
 				}
-
 
 			if ( 0 == $d ) {
 				array_push( $b1format, "CDEF:ds0bits=davg0,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds0maxbits=dmax0,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds0avgbits=davg0,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds0minbits=dmin0,".$multi.",*" );
+				array_push( $b1format, "CDEF:ds0lastbits=dlast0,".$multi.",*" );
 				}
 			else
 			if ( 1 == $d ) {
@@ -441,11 +443,12 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 				array_push( $b1format, "CDEF:ds1maxbits=dmax1,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds1avgbits=davg1,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds1minbits=dmin1,".$multi.",*" );
+				array_push( $b1format, "CDEF:ds1lastbits=dlast1,".$multi.",*" );
 				}
 			else  {
 				array_push( $b1format, "CDEF:ds0bits=davg0,".$multi.",*" );
 
-				if ( in_array( '2waygraph', $options ) )
+				if ( $need2way )
 					array_push( $b1format, "CDEF:ds1bits=davg1,".'-'.$multi.",*" );
 				else
 					array_push( $b1format, "CDEF:ds1bits=davg1,".$multi.",*" );
@@ -453,37 +456,49 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 				array_push( $b1format, "CDEF:ds0maxbits=dmax0,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds0avgbits=davg0,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds0minbits=dmin0,".$multi.",*" );
+				array_push( $b1format, "CDEF:ds0lastbits=dlast0,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds1maxbits=dmax1,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds1avgbits=davg1,".$multi.",*" );
 				array_push( $b1format, "CDEF:ds1minbits=dmin1,".$multi.",*" );
+				array_push( $b1format, "CDEF:ds1lastbits=dlast1,".$multi.",*" );
 
+				array_push( $b1format, "VDEF:ds0pctbits=ds0avgbits,95,PERCENT" );
+				array_push( $b1format, "VDEF:ds1pctbits=ds1avgbits,95,PERCENT" );
 				}
 
 			$ds0p = $ds1p = array();
 
 			$gmode0 = 'AREA';
 			$gmode1 = 'LINE';
-			if ( in_array( '2waygraph', $options ) ) 
+            if ( $need2way )
 				$gmode0 = $gmode1 = 'AREA';
 			if ( in_array( 'forceline', $options ) ) 
 				$gmode0 = $gmode1 = 'LINE';
 			if ( in_array( 'forcearea', $options ) ) 
 				$gmode0 = $gmode1 = 'AREA';
 
+            $reallast="\l";
+            if ( 2 == $d && $net95 ) $reallast=''; 
+
 			$ds0p = array(
 				$gmode0.":ds0bits#00C000:".sprintf("%-11.11s", $legendi ),
 				"GPRINT:ds0maxbits:MAX:%8.2lf %S   ",
 				"GPRINT:ds0avgbits:AVERAGE:%8.2lf %S   ",
 				"GPRINT:ds0minbits:MIN:%8.2lf %S   ",
-				"GPRINT:ds0avgbits:LAST:%8.2lf %S   \l",
+				"GPRINT:ds0avgbits:LAST:%8.2lf %S   ".$reallast,
 				);
+            if ( 2 == $d && $net95 )
+                array_push( $ds0p, "GPRINT:ds0pctbits:%8.2lf %S\l" );
+
 			$ds1p = array(
 				$gmode1.":ds1bits#0000FF:".sprintf("%-11.11s", $legendo ),
 				"GPRINT:ds1maxbits:MAX:%8.2lf %S   ",
 				"GPRINT:ds1avgbits:AVERAGE:%8.2lf %S   ",
 				"GPRINT:ds1minbits:MIN:%8.2lf %S   ",
-				"GPRINT:ds1avgbits:LAST:%8.2lf %S   \l",
+				"GPRINT:ds1avgbits:LAST:%8.2lf %S   ".$reallast,
 				);
+            if ( 2 == $d && $net95 )
+                array_push( $ds1p, "GPRINT:ds1pctbits:%8.2lf %S\l" );
 
 			if ( 0 == $d )
 				$dsp = $ds0p;
@@ -493,15 +508,16 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 			else
 				$dsp = array_merge( $ds0p, $ds1p );
 
-			$aformat = array_merge( $bformat, $b1format,
-				array(
+            $comments = array(
 					"COMMENT:                ",
 					"COMMENT:Maximum      ", 
 					"COMMENT:Average      ",
 					"COMMENT:Minimum      ",
-					"COMMENT:Current     \l" ),
-				$dsp
-			 	);
+					"COMMENT:Current    ". $reallast );
+            if ( 2 == $d && $net95 )
+                 array_push( $comments,"COMMENT:95percent\l" );
+
+			$aformat = array_merge( $bformat, $b1format, $comments, $dsp );
 
 			if ( 5 == getvar('debug') ) {
 				echo '<PRE>build aformat result:'; print_r( $aformat ); echo '</PRE>';
@@ -521,12 +537,14 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 
         echo "\nreturn: ";
 		print_r( $ra );
+        /*
         echo "\nrrd_fetch():\n";
                 //array( "AVERAGE", "--resolution", "60", "--start", "-1d", "--end", "start+1h" ) );
         $result = rrd_fetch( $rrdfile, 
                 array( "AVERAGE", "--resolution", "60", "--start", '-'.$period , "--end", sprintf("%d",time()-300)  )
 				);
         print_r( $result );
+        */
         echo '</PRE>';
 		}
 
