@@ -11,7 +11,7 @@ stored on server. <br>
 For a fast display with many small image, the html 
 include inline png data.
 
-This program is a rainy saturday projet, but it may be useful to some 
+This program is a rainy saturday project, but it may be useful to some 
 people so i decide to publish it as a beerware.
 
  * "THE BEER-WARE LICENSE" 
