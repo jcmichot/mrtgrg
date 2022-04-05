@@ -54,7 +54,7 @@ A new option is available in your MRTG config file:
 All test has been done with:
  FreeBSD and pkg mod_php74-7.4.27 php74-gd-7.4.23 php74-pecl-rrd-2.0.1_1
 
-Example of 2waygraph:
+Example of 2waygraph with 95 percentil:
 <p align="center">
   <img src="2waygraph.png" width="850" title="network interface example">
 </p>
