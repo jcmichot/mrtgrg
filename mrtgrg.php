@@ -13,7 +13,7 @@ html and images are built in realtime, this mean no .html or .png file
 stored on server. For a fast display with many small image, the html 
 include inline png data.
 
-This program is a rainy saturday projet, but it may be useful to some 
+This program is a rainy saturday project, but it may be useful to some 
 people so i decide to publish it as a beerware.
 
  * "THE BEER-WARE LICENSE" 
@@ -28,14 +28,14 @@ several absolute path and filename for your mrtg configuration file.
 
 Syntax example:
 
- rrdmrtg.php
- rrdmrtg.php?cfg=mrtg.cfg&target=port24
- rrdmrtg.php?cfg=mrtg.cfg&target=port24&png=weekly
+ mrtgrg.php
+ mrtgrg.php?cfg=mrtg.cfg&target=port24
+ mrtgrg.php?cfg=mrtg.cfg&target=port24&png=weekly
 
  To manualy force width &| height 
  (this can also be configured inside mrtg config file):
  
- rrdmrtg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1400&height=300
+ mrtgrg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1400&height=300
 
 A new option is available in your MRTG config file:
 
@@ -62,12 +62,10 @@ Note: i'm also using influxdb, telegraf, grafana,
 $mrtgconfigfiles = array (
 
 	'/usr/local/etc/mrtg/mrtg.cfg',
-	/*
 	'/usr/local/etc/mrtg/homebridge.cfg',
 	'/usr/local/etc/mrtg/livebox-pm.cfg',
 	'/usr/local/etc/mrtg/perso.cfg',
 	'/usr/local/etc/mrtg/rgw.cfg',
-	*/
 
 	);
 
@@ -272,15 +270,15 @@ function build_mrtg_graph( $rrdfile='', $format='daily' /*daily,weekly,monthly,y
 
 	$ylegend = "Bits per Second";
 	if ( isset( $config['ylegend'] ) )
-        $ylegend = "\n". preg_replace("/[^a-zA-Z0-9]+/", "", $config['ylegend'] );
+        $ylegend = "\n". str_replace(":", " ", $config['ylegend'] );
 
 	$legendi = 'in';
 	if ( isset( $config['legendi'] ) )
-        $legendi = preg_replace("/[^a-zA-Z0-9]+/", "", $config['legendi'] );
+        $legendi = str_replace(":", " ", $config['legendi'] );
 
 	$legendo = 'out';
 	if ( isset( $config['legendo'] ) )
-        $legendo = preg_replace("/[^a-zA-Z0-9]+/", "", $config['legendo'] );
+        $legendo = str_replace(":", " ", $config['legendo'] );
 
 	if ( isset( $config['xsize'] ) )
         $width = $config['xsize'];
