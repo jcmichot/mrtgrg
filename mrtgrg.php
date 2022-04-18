@@ -70,13 +70,35 @@ Note: i'm also using influxdb, telegraf, grafana,
 
 $mrtgconfigfiles = array (
 
-	/*
+/*
+    '/usr/local/etc/mrtg/rrd-4948.cfg',
+    '/usr/local/etc/mrtg/rrd-afnic.cfg',
+    '/usr/local/etc/mrtg/rrd-bavard.cfg',
+    '/usr/local/etc/mrtg/rrd-bertha.cfg',
+    '/usr/local/etc/mrtg/rrd-bertha2.cfg',
+    '/usr/local/etc/mrtg/rrd-bor.cfg',
+    '/usr/local/etc/mrtg/rrd-jord2.cfg',
+    '/usr/local/etc/mrtg/rrd-marvel2.cfg',
+    '/usr/local/etc/mrtg/rrd-mel2.cfg',
+    '/usr/local/etc/mrtg/rrd-modi3.cfg',
+    '/usr/local/etc/mrtg/rrd-mx.cfg',
+    '/usr/local/etc/mrtg/rrd-nas.cfg',
+    '/usr/local/etc/mrtg/rrd-nodisaster.cfg',
+    '/usr/local/etc/mrtg/rrd-odin2.cfg',
+    '/usr/local/etc/mrtg/rrd-sif2.cfg',
+    '/usr/local/etc/mrtg/rrd-surt3.cfg',
+    '/usr/local/etc/mrtg/rrd-surt4.cfg',
+    '/usr/local/etc/mrtg/rrd-sw-bureau.cfg',
+    '/usr/local/etc/mrtg/rrd-sw-gw-vitry.cfg',
+    '/usr/local/etc/mrtg/rrd-sw1.cfg',
+    '/usr/local/etc/mrtg/rrd-thrud2.cfg',
+*/
+
 	'/usr/local/etc/mrtg/mrtg.cfg',
 	'/usr/local/etc/mrtg/homebridge.cfg',
 	'/usr/local/etc/mrtg/livebox-pm.cfg',
 	'/usr/local/etc/mrtg/perso.cfg',
 	'/usr/local/etc/mrtg/rgw.cfg',
-	*/
 
 	);
 
