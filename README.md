@@ -39,6 +39,10 @@ Syntax example:
 
 [url]/mrtgrg.php?cfg=homebridge.cfg&target=power-home&png=weekly&width=1280&height=450&force2way=1
 
+Define start and stop argument variable to force graph a specific period inside last 30 days:
+[url]/mrtgrg.php?cfg=homebridge.cfg&target=tempext-home&png=daily&start=202204092000&end=202204101200
+(start to 2022-04-09 20:00, end to 2022-04-10 12:00)
+
 A new option is available in your MRTG config file:
 
     Rrd*Graph[ TARGET ]: 2waygraph,forcearea,forceday
